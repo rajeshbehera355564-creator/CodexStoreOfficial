@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CODEX STORE | Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHDsET66irMiRY8Re1mJhX1PX_alMAD1w",
+            authDomain: "codex-store-8c48b.firebaseapp.com",
+            projectId: "codex-store-8c48b",
+            storageBucket: "codex-store-8c48b.firebasestorage.app",
+            messagingSenderId: "28544855404",
+            appId: "1:28544855404:web:28ee9c35e30615a94ad749",
+            measurementId: "G-FLW5S73JFL"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Arial, sans-serif; }
+        body { background-color: #080c14; color: #f3f4f6; padding-bottom: 40px; }
+        
+        .navbar { background: #0f172a; border-bottom: 1px solid #1e293b; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 18px; font-weight: 900; color: #6366f1; text-decoration:none; }
+        
+        /* Auth Screen */
+        .auth-container { max-width: 360px; margin: 60px auto; background: #0f172a; border: 1px solid #1e293b; padding: 25px; border-radius: 14px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .auth-container h2 { font-size: 18px; margin-bottom: 8px; color: #6366f1; }
+        .auth-container p { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
+
+        /* Dashboard Screen */
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+        .box { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 16px; }
+        .box-title { font-size: 14px; font-weight: 800; margin-bottom: 12px; color: #818cf8; display: flex; align-items: center; gap: 6px; }
+        
+        input, select, textarea { width: 100%; background: #1e293b; border: 1px solid #334155; color: #fff; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 10px; outline: none; }
+        .btn { background: #10b981; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; width: 100%; }
+        .btn-blue { background: #0284c7; }
+        .btn-purple { background: #6366f1; }
+        .btn-danger { background: #ef4444; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><i class="fas fa-shield-alt"></i> CODEX STORE ADMIN</a>
+        <button id="logoutBtn" onclick="logoutAdmin()" class="btn btn-danger hidden" style="width:auto; padding:6px 12px; font-size:11px;">Logout</button>
+    </nav>
+
+    <!-- Simple Custom Username & Password Login Screen -->
+    <div id="loginSection" class="auth-container">
+        <h2><i class="fas fa-user-shield"></i> Admin Login</h2>
+        <p>Aapna Admin Username aur Password daalein</p>
+        
+        <input id="loginUser" type="text" placeholder="Username (Default: Raj)">
+        <input id="loginPass" type="password" placeholder="Password (Default: 1432)">
+        <button onclick="checkCredentials()" class="btn btn-purple"><i class="fas fa-sign-in-alt"></i> Login Panel</button>
+    </div>
+
+    <!-- Main Admin Dashboard -->
+    <div id="dashboardSection" class="container hidden">
+        
+        <!-- Manage Credentials (Change Username/Password) -->
+        <div class="box" style="grid-column: 1/-1; border-color:#6366f1;">
+            <div class="box-title" style="color:#a855f7;"><i class="fas fa-key"></i> Change Admin Credentials (Username & Password)</div>
+            <p style="font-size:11px; color:#94a3b8; margin-bottom:10px;">Agar aap kisi aur ko shop bech rahe hain ya apna password change karna chahte hain toh yahan se badlein:</p>
+            
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
+                <input id="newAdminUser" type="text" placeholder="Naya Username Set Karein">
+                <input id="newAdminPass" type="text" placeholder="Naya Password Set Karein">
+            </div>
+            <button onclick="updateCredentials()" class="btn btn-purple" style="margin-top:5px;"><i class="fas fa-user-check"></i> Save New Username & Password</button>
+        </div>
+
+        <!-- Social/Support Links Manager -->
+        <div class="box" style="grid-column: 1/-1;">
+            <div class="box-title" style="color:#00f0ff;"><i class="fas fa-link"></i> Manage Social & Support Channels Links</div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
+                <input id="adminWa" type="text" placeholder="WhatsApp Group / Chat Link">
+                <input id="adminTg" type="text" placeholder="Telegram Channel Link">
+                <input id="adminInsta" type="text" placeholder="Instagram Profile Link">
+                <input id="adminYt" type="text" placeholder="YouTube Channel Link">
+            </div>
+            <button onclick="saveSocialLinks()" class="btn btn-blue" style="margin-top:5px;"><i class="fas fa-save"></i> Update Links Live</button>
+        </div>
+
+        <!-- Add Product -->
+        <div class="box">
+            <div class="box-title"><i class="fas fa-plus-circle"></i> Add New Product</div>
+            <input id="pTitle" type="text" placeholder="Title (e.g. S2 Elite Pass FF)">
+            <input id="pPrice" type="number" placeholder="Price (₹)">
+            <select id="pCat">
+                <option value="FREE FIRE">Free Fire</option>
+                <option value="BGMI">BGMI</option>
+                <option value="VALORANT">Valorant</option>
+            </select>
+            <input id="pImg" type="text" placeholder="Image Direct Link">
+            <textarea id="pDesc" rows="2" placeholder="Details..."></textarea>
+            <button onclick="addProduct()" class="btn">Publish Listing</button>
+        </div>
+
+        <!-- Live Buyer Chat -->
+        <div class="box" style="display:flex; flex-direction:column; height:340px;">
+            <div class="box-title" style="color:#38bdf8;"><i class="fas fa-comments"></i> Buyer Enquiries</div>
+            <div id="adminChatList" style="flex:1; background:#080c14; border:1px solid #1e293b; border-radius:8px; padding:8px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; font-size:11px;">
+                <p style="color:#64748b; text-align:center;">No active chats...</p>
+            </div>
+            <div style="display:flex; gap:6px; margin-top:8px;">
+                <input id="replyInput" type="text" placeholder="Type reply..." style="margin-bottom:0;">
+                <button onclick="sendReply()" class="btn btn-blue" style="width:auto;">Reply</button>
+            </div>
+        </div>
+
+        <!-- Manage Listings -->
+        <div class="box">
+            <div class="box-title" style="color:#f59e0b;"><i class="fas fa-boxes"></i> Active Listings</div>
+            <div id="adminProductList" style="max-height:240px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
+                <p style="color:#64748b; font-size:11px;">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAdminUser = "Raj";
+        let currentAdminPass = "1432";
+
+        // Check if Admin Login Details already exist in Firebase
+        window.onload = function() {
+            if(sessionStorage.getItem('adminLoggedIn') === 'true') {
+                showDashboardUI();
+            }
+            db.collection('settings').doc('adminAuth').get().then(doc => {
+                if(doc.exists) {
+                    currentAdminUser = doc.data().username || "Raj";
+                    currentAdminPass = doc.data().password || "1432";
+                } else {
+                    // Initialize default credentials in DB
+                    db.collection('settings').doc('adminAuth').set({
+                        username: "Raj",
+                        password: "1432"
+                    });
+                }
+            });
+        };
+
+        // Login Handler
+        function checkCredentials() {
+            const u = document.getElementById('loginUser').value.trim();
+            const p = document.getElementById('loginPass').value.trim();
+
+            if (u === currentAdminUser && p === currentAdminPass) {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                showDashboardUI();
+            } else {
+                alert("Galat Username ya Password! Dobara koshish karein.");
+            }
+        }
+
+        // Change Admin Credentials
+        function updateCredentials() {
+            const newU = document.getElementById('newAdminUser').value.trim();
+            const newP = document.getElementById('newAdminPass').value.trim();
+
+            if (!newU || !newP) {
+                alert("Kripya naya Username aur Password dono bharein!");
+                return;
+            }
+
+            db.collection('settings').doc('adminAuth').set({
+                username: newU,
+                password: newP
+            }).then(() => {
+                currentAdminUser = newU;
+                currentAdminPass = newP;
+                alert("Mubarak Ho! Naya Username aur Password Save Ho Gaya Hain!");
+                document.getElementById('newAdminUser').value = '';
+                document.getElementById('newAdminPass').value = '';
+            }).catch(err => alert("Error: " + err.message));
+        }
+
+        function showDashboardUI() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            loadAdminChats();
+            loadAdminProducts();
+            loadCurrentLinks();
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('adminLoggedIn');
+            location.reload();
+        }
+
+        // Social Links Control
+        function saveSocialLinks() {
+            const wa = document.getElementById('adminWa').value.trim();
+            const tg = document.getElementById('adminTg').value.trim();
+            const insta = document.getElementById('adminInsta').value.trim();
+            const yt = document.getElementById('adminYt').value.trim();
+
+            db.collection('settings').doc('socialLinks').set({
+                whatsapp: wa, telegram: tg, instagram: insta, youtube: yt
+            }).then(() => alert("Social Links Updated Successfully!"));
+        }
+
+        function loadCurrentLinks() {
+            db.collection('settings').doc('socialLinks').get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('adminWa').value = data.whatsapp || '';
+                    document.getElementById('adminTg').value = data.telegram || '';
+                    document.getElementById('adminInsta').value = data.instagram || '';
+                    document.getElementById('adminYt').value = data.youtube || '';
+                }
+            });
+        }
+
+        // Add / Delete Products
+        function addProduct() {
+            const title = document.getElementById('pTitle').value.trim();
+            const price = document.getElementById('pPrice').value.trim();
+            const category = document.getElementById('pCat').value;
+            const imageUrl = document.getElementById('pImg').value.trim();
+            const desc = document.getElementById('pDesc').value.trim();
+
+            if (!title || !price) { alert("Title and Price required!"); return; }
+
+            db.collection('products').add({
+                title, price, category, imageUrl, desc,
+                created: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                alert("Product Added Live!");
+                document.getElementById('pTitle').value = '';
+                document.getElementById('pPrice').value = '';
+                document.getElementById('pImg').value = '';
+                document.getElementById('pDesc').value = '';
+            });
+        }
+
+        function loadAdminProducts() {
+            db.collection('products').onSnapshot(snapshot => {
+                const list = document.getElementById('adminProductList');
+                list.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const item = doc.data();
+                    list.innerHTML += `
+                        <div style="background:#1e293b; padding:8px; border-radius:6px; display:flex; justify-between; align-items:center; font-size:11px;">
+                            <div>
+                                <b>${item.title}</b><br>
+                                <span style="color:#10b981;">₹${item.price}</span>
+                            </div>
+                            <button onclick="deleteProduct('${doc.id}')" style="background:none; border:none; color:#f87171; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function deleteProduct(id) {
+            if(confirm("Delete product?")) db.collection('products').doc(id).delete();
+        }
+
+        // Admin Chat
+        function loadAdminChats() {
+            db.collection('chats').orderBy('timestamp', 'asc').onSnapshot(snapshot => {
+                const chatBox = document.getElementById('adminChatList');
+                chatBox.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const msg = doc.data();
+                    chatBox.innerHTML += `
+                        <div style="background:#1e293b; padding:6px; border-radius:6px;">
+                            <b style="color:#818cf8; font-size:9px;">${msg.senderName}</b><br>${msg.text}
+                        </div>
+                    `;
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        function sendReply() {
+            const input = document.getElementById('replyInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            db.collection('chats').add({
+                senderUid: 'ADMIN',
+                senderName: 'ADMIN SUPPORT',
+                text: text,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => { input.value = ''; });
+        }
+    </script>
+</body>
+</html>
